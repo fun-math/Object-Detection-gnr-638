@@ -7,9 +7,10 @@ from backbone import *
 from neck import *
 from head import *
 from yololayer import *
+from gaussianyololayer import *
 
 class YOLOv4(nn.Module):
-    def __init__(self, in_channels=3, n_classes=80, weights_path=None, pretrained=False, img_dim=608, anchors=None, dropblock=True)#, sam=False, eca=False, ws=False, iou_aware=False, coord=False, hard_mish=False, asff=False, repulsion_loss=False):
+    def __init__(self, in_channels=3, n_classes=80, weights_path=None, pretrained=False, img_dim=608, anchors=None, dropblock=True, iou_aware=None)#, sam=False, eca=False, ws=False, iou_aware=False, coord=False, hard_mish=False, asff=False, repulsion_loss=False):
         super().__init__()
         if anchors is None:
             anchors = [[[10, 13], [16, 30], [33, 23]],
@@ -17,8 +18,11 @@ class YOLOv4(nn.Module):
                        [[116, 90], [156, 198], [373, 326]]]
 
         output_ch = (4 + 1 + n_classes) * 3
-        if iou_aware:
-            output_ch += 1 #1 for iou
+        #if iou_aware:
+            #output_ch += 1 #1 for iou
+
+        if gaussian_loss is not None :
+            output_ch+=3
 
         self.img_dim = img_dim
 
@@ -28,9 +32,16 @@ class YOLOv4(nn.Module):
 
         self.head = Head(output_ch, dropblock=False)#, sam=sam, eca=eca, ws=ws, coord=coord, hard_mish=hard_mish)
 
-        self.yolo1 = YOLOLayer(anchors[0], n_classes, img_dim, iou_aware=iou_aware)#, repulsion_loss=repulsion_loss)
-        self.yolo2 = YOLOLayer(anchors[1], n_classes, img_dim, iou_aware=iou_aware)#, repulsion_loss=repulsion_loss)
-        self.yolo3 = YOLOLayer(anchors[2], n_classes, img_dim, iou_aware=iou_aware)#, repulsion_loss=repulsion_loss)
+        if gaussian_loss is not None :
+            self.yolo1 = GaussianYOLOLayer(anchors[0], n_classes, img_dim, iou_aware=iou_aware)#, type=gaussian_loss)#, repulsion_loss=repulsion_loss)
+            self.yolo2 = GaussianYOLOLayer(anchors[1], n_classes, img_dim, iou_aware=iou_aware)#, type=gaussian_loss)#, repulsion_loss=repulsion_loss)
+            self.yolo3 = GaussianYOLOLayer(anchors[2], n_classes, img_dim, iou_aware=iou_aware)#, type=gaussian_loss)#, repulsion_loss=repulsion_loss)
+
+
+        else :
+            self.yolo1 = YOLOLayer(anchors[0], n_classes, img_dim, iou_aware=iou_aware)#, repulsion_loss=repulsion_loss)
+            self.yolo2 = YOLOLayer(anchors[1], n_classes, img_dim, iou_aware=iou_aware)#, repulsion_loss=repulsion_loss)
+            self.yolo3 = YOLOLayer(anchors[2], n_classes, img_dim, iou_aware=iou_aware)#, repulsion_loss=repulsion_loss)
 
         if weights_path:
             try:  # If we change input or output layers amount, we will have an option to use pretrained weights
