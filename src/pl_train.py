@@ -7,7 +7,7 @@ from YOLOv4 import YOLOv4
 
 from optimizers import LARS, Ranger, RAdam
 
-# from sched_del import DelayedCosineAnnealingLR
+from sched_del import DelayedCosineAnnealingLR
 
 
 class YOLOv4PL(pl.LightningModule):
@@ -103,8 +103,8 @@ class YOLOv4PL(pl.LightningModule):
 
         if self.hparams.scheduler == "Cosine Warm-up":
             self.scheduler = torch.optim.lr_scheduler.OneCycleLR(self.optimizer, self.hparams.lr, epochs=self.hparams.epochs, steps_per_epoch=1, pct_start=self.hparams.pct_start)
-        # if self.hparams.scheduler == "Cosine Delayed":
-        #     self.scheduler = DelayedCosineAnnealingLR(self.optimizer, self.hparams.flat_epochs, self.hparams.cosine_epochs)
+        if self.hparams.scheduler == "Cosine Delayed":
+            self.scheduler = DelayedCosineAnnealingLR(self.optimizer, self.hparams.flat_epochs, self.hparams.cosine_epochs)
 
         
         sched_dict = {'scheduler': self.scheduler}

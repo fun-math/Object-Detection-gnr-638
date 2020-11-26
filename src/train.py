@@ -20,7 +20,10 @@ hparams = {
     "SAT" : False,
     "epsilon" : 0.1,
     "Dropblock" : False,
-    "scheduler" : "Cosine Warm-up"
+    "optimizer" : "Ranger",
+    "flat_epochs" : 50,
+    "cosine_epochs" : 25,
+    "scheduler" : "Cosine Delayed"
 }
 
 hparams = Namespace(**hparams)
