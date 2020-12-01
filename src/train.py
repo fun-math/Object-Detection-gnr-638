@@ -3,13 +3,13 @@ from pl_train import YOLOv4PL
 
 import pytorch_lightning as pl
 from argparse import Namespace
-from pytorch_lightning.callbacks import LearningRateLogger
+from pytorch_lightning.callbacks import LearningRateMonitor
 
 
 hparams = {
     "pretrained" : False,
-    "train_ds" : "../dataset/train.txt",
-    "valid_ds" : "../dataset/valid.txt",
+    "train_ds" : "../data/coco/train_images.txt",
+    "valid_ds" : "../data/coco/val_images.txt",
     "bs" : 1,
     "momentum": 0.9,
     "wd": 0.001,
@@ -23,7 +23,8 @@ hparams = {
     "optimizer" : "Ranger",
     "flat_epochs" : 50,
     "cosine_epochs" : 25,
-    "scheduler" : "Cosine Delayed"
+    "scheduler" : "Cosine Delayed",
+    "iou_aware" : None
 }
 
 hparams = Namespace(**hparams)
@@ -43,7 +44,7 @@ t = pl.Trainer(logger = tb_logger,
            gpus=1,
            precision=32,
            benchmark=True,
-           callbacks=[LearningRateLogger()],
+           callbacks=[LearningRateMonitor()],
            min_epochs=100,
 
 
@@ -55,7 +56,7 @@ t = pl.Trainer(logger = tb_logger,
 
 
 
-r = t.lr_find(m, min_lr=1e-10, max_lr=1e-3, early_stop_threshold=None)
+r = t.tuner.lr_find(m, min_lr=1e-10, max_lr=1e-3, early_stop_threshold=None)
 r.plot()
 
 t.fit(m)

@@ -10,7 +10,7 @@ from yololayer import *
 from gaussianyololayer import *
 
 class YOLOv4(nn.Module):
-    def __init__(self, in_channels=3, n_classes=80, weights_path=None, pretrained=False, img_dim=608, anchors=None, dropblock=True, iou_aware=None, deformable=deformable, gaussian_loss=None):#, sam=False, eca=False, ws=False, iou_aware=False, coord=False, hard_mish=False, asff=False, repulsion_loss=False):
+    def __init__(self, in_channels=3, n_classes=80, weights_path=None, pretrained=False, img_dim=608, anchors=None, dropblock=True, iou_aware=None, deformable=False, gaussian_loss=None):#, sam=False, eca=False, ws=False, iou_aware=False, coord=False, hard_mish=False, asff=False, repulsion_loss=False):
         super().__init__()
         if anchors is None:
             anchors = [[[10, 13], [16, 30], [33, 23]],
