@@ -2,6 +2,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from convblock import *
+from ladc import DeformConvNet
 
 # Taken and modified from https://github.com/Tianxiaomo/pytorch-YOLOv4/blob/master/models.py
 class ResBlock(nn.Module):
@@ -78,7 +79,7 @@ class DownSampleFirst(nn.Module):
 
 
 class DownSampleBlock(nn.Module):
-    def __init__(self, in_c, out_c, nblocks=2, dropblock=True):
+    def __init__(self, in_c, out_c, nblocks=2, dropblock=True, deformable=False):
         super().__init__()
 
         self.c1 = ConvBlock(in_c, out_c, 3, 2, "mish", dropblock=dropblock)
@@ -89,7 +90,10 @@ class DownSampleBlock(nn.Module):
         # CSP Layer
         self.dense_c2_c4 = ConvBlock(out_c, in_c, 1, 1, "mish", dropblock=dropblock)
 
-        self.c5 = ConvBlock(out_c, out_c, 1, 1, "mish", dropblock=dropblock)
+        if deformable:
+            self.c5 = DeformConvNet(out_c, dropblock=dropblock)
+        else:
+            self.c5 = ConvBlock(out_c, out_c, 1, 1, "mish", dropblock=dropblock)
 
     def forward(self, x):
         x1 = self.c1(x)
@@ -103,13 +107,13 @@ class DownSampleBlock(nn.Module):
         return x5
 
 class Backbone(nn.Module):
-    def __init__(self, in_channels, dropblock=True):
+    def __init__(self, in_channels, dropblock=True, deformable=False):
         super().__init__()
 
         self.d1 = DownSampleFirst(in_channels=in_channels, dropblock=dropblock)
         self.d2 = DownSampleBlock(64, 128, nblocks=2, dropblock=dropblock)
-        self.d3 = DownSampleBlock(128, 256, nblocks=8, dropblock=dropblock)
-        self.d4 = DownSampleBlock(256, 512, nblocks=8, dropblock=dropblock)
+        self.d3 = DownSampleBlock(128, 256, nblocks=8, dropblock=dropblock, deformable=deformable)
+        self.d4 = DownSampleBlock(256, 512, nblocks=8, dropblock=dropblock, deformable=deformable)
         self.d5 = DownSampleBlock(512, 1024, nblocks=4, dropblock=dropblock)
 
     def forward(self, x):

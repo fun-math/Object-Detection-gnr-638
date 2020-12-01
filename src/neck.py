@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from convblock import *
 
 class PAN_Layer(nn.Module):
-    def __init__(self, in_channels, dropblock=True)#, sam=False, eca=False, ws=False, coord=False, hard_mish=False):
+    def __init__(self, in_channels, dropblock=True):#, sam=False, eca=False, ws=False, coord=False, hard_mish=False):
         super().__init__()
 
         in_c = in_channels
@@ -105,7 +105,7 @@ class ASFF(nn.Module):
 
 
 class Neck(nn.Module):
-    def __init__(self, spp_kernels=(5, 9, 13), PAN_layers=[512, 256], dropblock=True,asff=False)#, sam=False, eca=False, ws=False, coord=False, hard_mish=False, asff=False):
+    def __init__(self, spp_kernels=(5, 9, 13), PAN_layers=[512, 256], dropblock=True,asff=False):#, sam=False, eca=False, ws=False, coord=False, hard_mish=False, asff=False):
         super().__init__()
         self.asff = asff
 
