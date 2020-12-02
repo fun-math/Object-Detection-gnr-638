@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
+from yololayer import *
 
 class GaussianYOLOLayer(nn.Module):
     """Detection layer taken and modified from https://github.com/eriklindernoren/PyTorch-YOLOv3"""
