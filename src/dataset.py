@@ -10,7 +10,7 @@ import random
 
 
 class ListDataset(Dataset):
-    def __init__(self, list_path, img_dir="images", labels_dir="labels",  img_extensions=[".JPG"], img_size=608, train=True, bbox_minsize=0.01, brightness_range=0.25, contrast_range=0.25, hue_range=0.05, saturation_range=0.25, cross_offset=0.2):
+    def __init__(self, list_path, img_dir="images", labels_dir="labels",  img_extensions=[".JPG",".png",".jpg"], img_size=608, train=True, bbox_minsize=0.01, brightness_range=0.25, contrast_range=0.25, hue_range=0.05, saturation_range=0.25, cross_offset=0.2):
         with open(list_path, "r") as file:
             self.img_files = file.read().splitlines()
 
@@ -46,7 +46,7 @@ class ListDataset(Dataset):
         width, height = img.size
 
         if os.path.exists(label_path):
-            boxes = torch.from_numpy(np.loadtxt(label_path).reshape(-1, 5))
+            boxes = torch.from_numpy(np.loadtxt(label_path, delimiter=',').reshape(-1, 5))
 
         # RESIZING
         if width > height:
@@ -107,8 +107,8 @@ class ListDataset(Dataset):
                 elif n == 3:
                     mossaic_img[:, cross_y : self.img_size, cross_x : self.img_size] = fragment_img
 
-            #Set mossaic to return tensor
             tensor_img = mossaic_img
+            #Set mossaic to return tensor
 
 
         # For validation it would be letterbox
@@ -162,7 +162,7 @@ class ListDataset(Dataset):
         width, height = img.size
 
         if os.path.exists(label_path):
-            boxes = torch.from_numpy(np.loadtxt(label_path).reshape(-1, 5))
+            boxes = torch.from_numpy(np.loadtxt(label_path, delimiter=',').reshape(-1, 5))
 
         #RESIZING
         if width > height:

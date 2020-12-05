@@ -8,9 +8,9 @@ from pytorch_lightning.callbacks import LearningRateMonitor
 
 hparams = {
     "pretrained" : False,
-    "train_ds" : "../data/coco/train_images.txt",
-    "valid_ds" : "../data/coco/val_images.txt",
-    "bs" : 1,
+    "train_ds" : "../data/kitti/train_images.txt",
+    "valid_ds" : "../data/kitti/val_images.txt",
+    "bs" : 8,
     "momentum": 0.9,
     "wd": 0.001,
     "lr": 1e-8,
@@ -20,11 +20,12 @@ hparams = {
     "SAT" : False,
     "epsilon" : 0.1,
     "Dropblock" : False,
-    "optimizer" : "Ranger",
+    "optimizer" : "SGD",
     "flat_epochs" : 50,
     "cosine_epochs" : 25,
-    "scheduler" : "Cosine Delayed",
-    "iou_aware" : None
+    # "scheduler" : "Cosine Delayed",
+    "scheduler" : "Cosine Warm-up",
+    "iou_aware" : None,
 }
 
 hparams = Namespace(**hparams)
@@ -56,7 +57,7 @@ t = pl.Trainer(logger = tb_logger,
 
 
 
-r = t.tuner.lr_find(m, min_lr=1e-10, max_lr=1e-3, early_stop_threshold=None)
-r.plot()
+# r = t.tuner.lr_find(m, min_lr=1e-10, max_lr=1e-3)
+# r.plot()
 
 t.fit(m)

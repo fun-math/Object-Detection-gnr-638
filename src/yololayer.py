@@ -40,6 +40,7 @@ class YOLOLayer(nn.Module):
 
     def build_targets(self, pred_boxes, pred_cls, target, anchors, ignore_thres):
 
+        # print(target)
         ByteTensor = torch.cuda.BoolTensor if pred_boxes.is_cuda else torch.BoolTensor
         FloatTensor = torch.cuda.FloatTensor if pred_boxes.is_cuda else torch.FloatTensor
 
@@ -47,6 +48,7 @@ class YOLOLayer(nn.Module):
         nA = pred_boxes.size(1)
         nC = pred_cls.size(-1)
         nG = pred_boxes.size(2)
+        # print(nB, nA, nC, nG)
 
         # Output tensors
         obj_mask = ByteTensor(nB, nA, nG, nG).fill_(0)
@@ -58,36 +60,72 @@ class YOLOLayer(nn.Module):
         tw = FloatTensor(nB, nA, nG, nG).fill_(0)
         th = FloatTensor(nB, nA, nG, nG).fill_(0)
         tcls = FloatTensor(nB, nA, nG, nG, nC).fill_(0)
+        # print(obj_mask, noobj_mask, class_mask, iou, tx, ty, tw, th, tcls)
+
 
         target_boxes_grid = FloatTensor(nB, nA, nG, nG, 4).fill_(0)
-
+        # print(target_boxes_grid)
         # 2 3 xy
         # 4 5 wh
         # Convert to position relative to box
         target_boxes = target[:, 2:6] * nG
         gxy = target_boxes[:, :2]
         gwh = target_boxes[:, 2:]
+        # print(target_boxes)
+        # print(gxy)
+        # print(gwh)
 
         # Get anchors with best iou
         ious = torch.stack([self.bbox_wh_iou(anchor, gwh) for anchor in anchors])
         best_ious, best_n = ious.max(0)
-
+        # print(ious)
+        # print(best_ious)
+        # print(best_n)
         # Separate target values
+        # print(gxy)
         b, target_labels = target[:, :2].long().t()
         gx, gy = gxy.t()
         gw, gh = gwh.t()
         gi, gj = gxy.long().t()
+        # print(b)
+        # print(target_labels)
+        # print(gx, gy)
+        # print(gw, gh)
+        # print(gi, gj)
 
-        # Setting target boxes to big grid, it would be used to count loss
+        # # Setting target boxes to big grid, it would be used to count loss
+        # print(b)
+        # print(best_n)
+        # print(gi)
+        # print(gj)
+        # print(target_boxes_grid)
+        # print(target_boxes)
         target_boxes_grid[b, best_n, gj, gi] = target_boxes
+        # print(b)
+        # print(best_n)
+        # print(gi)
+        # print(gj)
+        # print(target_boxes_grid)
+        # print(target_boxes)
 
         # Set masks
         obj_mask[b, best_n, gj, gi] = 1
         noobj_mask[b, best_n, gj, gi] = 0
+        # print(obj_mask)
 
         # Set noobj mask to zero where iou exceeds ignore threshold
         for i, anchor_ious in enumerate(ious.t()):
-            noobj_mask[b[i], anchor_ious > ignore_thres, gj[i], gi[i]] = 0
+          # print(i)
+          # print("lin1")
+          # print(type(b[i]))
+          # print("lin2")
+          # print(anchor_ious > ignore_thres)
+          # print("lin3")
+          # print(gj[i])
+          # print("lin4")
+          # print(gi[i])
+          # print("lin5")
+          noobj_mask[b[i], anchor_ious > ignore_thres, gj[i], gi[i]] = 0
 
         # Coordinates
         tx[b, best_n, gj, gi] = gx - gx.floor()
@@ -247,18 +285,19 @@ class YOLOLayer(nn.Module):
         return torch.stack(RepGTS).mean(), torch.stack(RepBoxes).mean()
 
     def forward(self, x, targets=None):
+        print("entered in forward")
         # Tensors for cuda support
         FloatTensor = torch.cuda.FloatTensor if x.is_cuda else torch.FloatTensor
-
+        # print(self.num_classes)
         num_samples = x.size(0)
         grid_size = x.size(2)
-
+        # print("x:",x.size())
         prediction = (
             x.view(num_samples, self.num_anchors, self.num_classes + 5, grid_size, grid_size)
             .permute(0, 1, 3, 4, 2)
             .contiguous()
         )
-
+        # print("prediction:",prediction.size())
         # Get outputs
         x = torch.sigmoid(prediction[..., 0])  # Center x
         y = torch.sigmoid(prediction[..., 1])  # Center y
@@ -270,7 +309,7 @@ class YOLOLayer(nn.Module):
         else:
             pred_cls = torch.sigmoid(prediction[..., 5:-1])# Cls pred
             pred_iou = torch.sigmoid(prediction[..., -1]) #IoU pred
-
+        # print("pred_cls:",pred_cls.size())
         # If grid size does not match current we compute new offsets
         if grid_size != self.grid_size or self.grid_x.is_cuda != x.is_cuda:
             self.compute_grid_offsets(grid_size, cuda=x.is_cuda)
@@ -333,7 +372,7 @@ class YOLOLayer(nn.Module):
             pred_iou_masked = pred_iou[obj_mask]
             total_loss += F.binary_cross_entropy(pred_iou_masked, iou_masked)   
 
-        if self.repulstion_loss:
+        if self.repulsion_loss:
             repgt, repbox = self.calculate_repullsion(targets, output)
             total_loss += 0.5 * repgt + 0.5 * repbox
 
@@ -341,5 +380,6 @@ class YOLOLayer(nn.Module):
         # print(f"Confidence is object: {loss_conf_obj}, Confidence no object: {loss_conf_noobj}")
         # print(f"IoU: {iou_masked}; DIoU: {rDIoU}; alpha: {alpha}; v: {v}")
         # print(f"CIoU : {CIoUloss.item()}; Confindence: {loss_conf.item()}; Class loss should be because of label smoothing: {loss_cls.item()}")
+        print("forward exit",total_loss)
         return output, total_loss
 
