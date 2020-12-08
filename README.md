@@ -23,7 +23,7 @@ This folder contains a file for postprocessing of yolo output.
 
 ## How to run?
 
-@Kartikey 
+@Kartikey ..
 
 ## References 
 
