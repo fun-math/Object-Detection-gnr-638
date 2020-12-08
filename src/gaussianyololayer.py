@@ -6,8 +6,8 @@ from yololayer import *
 class GaussianYOLOLayer(nn.Module):
     """Detection layer taken and modified from https://github.com/eriklindernoren/PyTorch-YOLOv3"""
 
-    def __init__(self, anchors, num_classes, img_dim=608, grid_size=None, iou_aware=False, repulsion_loss=False):
-        super(YOLOLayer, self).__init__()
+    def __init__(self, anchors, num_classes, img_dim=608, grid_size=None, gaussian_loss=0, repulsion_loss=False):
+        super(GaussianYOLOLayer, self).__init__()
         self.anchors = anchors
         self.num_anchors = len(anchors)
         self.num_classes = num_classes
@@ -22,7 +22,7 @@ class GaussianYOLOLayer(nn.Module):
         else:
             self.grid_size = 0  # grid size
 
-        self.iou_aware = iou_aware
+        self.gaussian_loss = gaussian_loss
         self.repulsion_loss = repulsion_loss
 
     def compute_grid_offsets(self, grid_size, cuda=True):
@@ -252,8 +252,11 @@ class GaussianYOLOLayer(nn.Module):
         num_samples = x.size(0)
         grid_size = x.size(2)
 
+        out_ch=self.num_classes+5
+        if self.gaussian_loss!=0:
+          out_ch+=1
         prediction = (
-            x.view(num_samples, self.num_anchors, self.num_classes + 6, grid_size, grid_size)
+            x.view(num_samples, self.num_anchors, out_ch, grid_size, grid_size)
             .permute(0, 1, 3, 4, 2)
             .contiguous()
         )
@@ -265,7 +268,7 @@ class GaussianYOLOLayer(nn.Module):
         h = prediction[..., 3]  # Height
         pred_conf = torch.sigmoid(prediction[..., 4])  # Conf
 
-        if not self.iou_aware:
+        if self.gaussian_loss==0:
             pred_cls = torch.sigmoid(prediction[..., 5:])  # Cls pred
         else:
             pred_cls = torch.sigmoid(prediction[..., 5:-1])# Cls pred
@@ -287,10 +290,19 @@ class GaussianYOLOLayer(nn.Module):
                 pred_boxes.view(num_samples, -1, 4) * self.stride,
                 pred_conf.view(num_samples, -1, 1),
                 pred_cls.view(num_samples, -1, self.num_classes),
-                pred_sigma.view(num_samples, -1, 1),
+                #pred_sigma.view(num_samples, -1, 1),
             ),
             -1,
         )
+
+        if self.gaussian_loss != 0:
+            output = torch.cat(
+                (
+                    output,
+                    pred_sigma.view(num_samples, -1, 1),      
+                )
+                -1,
+            )
 
         # OUTPUT IS ALL BOXES WITH THEIR CONFIDENCE AND WITH CLASS
         if targets is None:
@@ -331,12 +343,18 @@ class GaussianYOLOLayer(nn.Module):
 
         total_loss = loss_cls + loss_conf #+ CIoUloss +
 
-        if self.iou_aware:
+        if self.gaussian_loss==0:
+            total_loss+=float(CIoU.sum(0)/num_samples)
+
+        elif self.gaussian_loss==1:
             #pred_iou_masked = pred_iou[obj_mask]
             #total_loss += F.binary_cross_entropy(pred_iou_masked, iou_masked)   
-            total_loss += (CIoU**2/(2*pred_sigma**2)+torch.log(pred_sigma)).mean()
+            total_loss += float((CIoU**2/(2*pred_sigma**2)+torch.log(pred_sigma)).sum(0)/num_samples)
 
-        if self.repulstion_loss:
+        elif self.gaussian_loss==2:
+            total_loss += float((CIoU**2/(2*pred_sigma**2)+pred_sigma).sum(0)/num_samples)
+
+        if self.repulsion_loss:
             repgt, repbox = self.calculate_repullsion(targets, output)
             total_loss += 0.5 * repgt + 0.5 * repbox
 

@@ -22,7 +22,7 @@ class YOLOv4PL(pl.LightningModule):
         self.model = YOLOv4(n_classes=8,
             pretrained=hparams.pretrained,
             dropblock=hparams.Dropblock,
-            iou_aware=hparams.iou_aware).cuda()
+            gaussian_loss=hparams.gaussian_loss).cuda()
 
     def train_dataloader(self):
         train_dl = DataLoader(self.train_ds, batch_size=self.hparams.bs, collate_fn=self.train_ds.collate_fn, pin_memory=True)

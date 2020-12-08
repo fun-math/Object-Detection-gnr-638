@@ -25,7 +25,7 @@ hparams = {
     "cosine_epochs" : 25,
     # "scheduler" : "Cosine Delayed",
     "scheduler" : "Cosine Warm-up",
-    "iou_aware" : None,
+    "gaussian_loss" : 0,
 }
 
 hparams = Namespace(**hparams)
