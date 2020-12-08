@@ -27,4 +27,18 @@ This folder contains a file for postprocessing of yolo output.
 
 ## References 
 
- 
+### Publication 
+
+* [YOLOv4: Optimal Speed and Accuracy of Object Detection](https://arxiv.org/pdf/2004.10934)
+* [Gaussian YOLOv3: An Accurate and Fast Object Detector Using Localization Uncertainty for Autonomous Driving](https://arxiv.org/pdf/1904.04620)
+* [Object detection with location-aware deformable convolution and backward attention filtering](https://openaccess.thecvf.com/content_CVPR_2019/papers/Zhang_Object_Detection_With_Location-Aware_Deformable_Convolution_and_Backward_Attention_Filtering_CVPR_2019_paper.pdf)
+
+### Dataset 
+
+* [COCO 2017](https://cocodataset.org/#download)
+* [The KITTI Vision Benchmark Suite](http://www.cvlibs.net/datasets/kitti/)
+
+### Implementation
+
+* https://github.com/VCasecnikovs/Yet-Another-YOLOv4-Pytorch
+* https://github.com/Tianxiaomo/pytorch-YOLOv4
