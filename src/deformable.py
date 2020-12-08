@@ -6,6 +6,7 @@ from torch.autograd import Variable
 import numpy as np
 from scipy.ndimage.interpolation import map_coordinates as sp_map_coordinates
 
+"""Deformable convolutions taken and modified from https://github.com/oeway/pytorch-deform-conv """
 
 def th_flatten(a):
     """Flatten tensor"""
