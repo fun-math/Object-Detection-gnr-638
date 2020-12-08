@@ -47,7 +47,9 @@ class ListDataset(Dataset):
 
         if os.path.exists(label_path):
             boxes = torch.from_numpy(np.loadtxt(label_path, delimiter=',').reshape(-1, 5))
-
+        else :
+            print(label_path)
+            
         # RESIZING
         if width > height:
             ratio = height/width

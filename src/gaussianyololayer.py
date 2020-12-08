@@ -7,7 +7,7 @@ class GaussianYOLOLayer(nn.Module):
     """Detection layer taken and modified from https://github.com/eriklindernoren/PyTorch-YOLOv3"""
 
     def __init__(self, anchors, num_classes, img_dim=608, grid_size=None, gaussian_loss=0, repulsion_loss=False):
-        super(YOLOLayer, self).__init__()
+        super(GaussianYOLOLayer, self).__init__()
         self.anchors = anchors
         self.num_anchors = len(anchors)
         self.num_classes = num_classes
@@ -252,8 +252,11 @@ class GaussianYOLOLayer(nn.Module):
         num_samples = x.size(0)
         grid_size = x.size(2)
 
+        out_ch=self.num_classes+5
+        if self.gaussian_loss!=0:
+          out_ch+=1
         prediction = (
-            x.view(num_samples, self.num_anchors, self.num_classes + 6, grid_size, grid_size)
+            x.view(num_samples, self.num_anchors, out_ch, grid_size, grid_size)
             .permute(0, 1, 3, 4, 2)
             .contiguous()
         )
@@ -292,7 +295,7 @@ class GaussianYOLOLayer(nn.Module):
             -1,
         )
 
-        if gaussian_loss != 0:
+        if self.gaussian_loss != 0:
             output = torch.cat(
                 (
                     output,
@@ -351,7 +354,7 @@ class GaussianYOLOLayer(nn.Module):
         elif self.gaussian_loss==2:
             total_loss += float((CIoU**2/(2*pred_sigma**2)+pred_sigma).sum(0)/num_samples)
 
-        if self.repulstion_loss:
+        if self.repulsion_loss:
             repgt, repbox = self.calculate_repullsion(targets, output)
             total_loss += 0.5 * repgt + 0.5 * repbox
 
