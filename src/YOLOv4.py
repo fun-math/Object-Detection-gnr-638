@@ -73,6 +73,5 @@ class YOLOv4(nn.Module):
 
         loss = (loss1 + loss2 + loss3)/3
 
-        print("loss:",loss)
 
         return out, loss
