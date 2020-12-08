@@ -16,8 +16,8 @@ This folder contains train.txt and test.txt required for training for both COCO 
 ### src
 
 This folder contains all the code for different parts of the model and for the dataset class.
--ladc.py is a module for location aware deformable convolutions.
--gaussianyololayer.py is a module which contains gaussian loss modelling.
+- ladc.py is a module for location aware deformable convolutions.
+- gaussianyololayer.py is a module which contains gaussian loss modelling.
 
 ### util
 
