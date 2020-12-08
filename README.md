@@ -23,7 +23,13 @@ This folder contains a file for postprocessing of yolo output.
 
 ## How to run?
 
-@Kartikey ..
+The folder src contains a train.py file which has an object hparams which contains training related information. This information needs to be set in the file (although there are default values). 
+- "train_ds" will correspond to the location of train_images.txt file which contains location of training images
+- "valid_ds" will correspond to the location of val_images.txt file which contains location of validation images
+
+The training and validation images need to be placed in folders train_images and val_images respectively (or as mentioned in val_images.txt file) in the current working directory. Similarly, the training and validation labels should be placed in folders train_labels and val_labels respectively (or as mentioned in val_images.txt file) in the current working directory.
+
+Finally, executing the file Object-Detection-gnr-638/src/train.py with the latest version of python will execute training.
 
 ## References 
 
