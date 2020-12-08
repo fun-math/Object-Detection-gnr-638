@@ -10,7 +10,7 @@ hparams = {
     "pretrained" : False,
     "train_ds" : "../data/kitti/train_images.txt",
     "valid_ds" : "../data/kitti/val_images.txt",
-    "bs" : 8,
+    "bs" : 32,
     "momentum": 0.9,
     "wd": 0.001,
     "lr": 1e-8,

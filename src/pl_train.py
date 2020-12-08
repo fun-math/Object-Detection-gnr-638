@@ -25,21 +25,17 @@ class YOLOv4PL(pl.LightningModule):
             gaussian_loss=hparams.gaussian_loss).cuda()
 
     def train_dataloader(self):
-        print("tdl")
         train_dl = DataLoader(self.train_ds, batch_size=self.hparams.bs, collate_fn=self.train_ds.collate_fn, pin_memory=True)
         return train_dl
 
     def val_dataloader(self):
-        print("vdl")
         valid_dl = DataLoader(self.valid_ds, batch_size=self.hparams.bs, collate_fn=self.valid_ds.collate_fn, pin_memory=True)
         return valid_dl
 
     def forward(self, x, y=None):
-        print("yolopl forward")
         return self.model(x, y)
 
     def basic_training_step(self, batch):
-        print("bts enter")
         filenames, images, labels = batch
         y_hat, loss = self(images, labels)
         
@@ -71,7 +67,6 @@ class YOLOv4PL(pl.LightningModule):
 
 
     def training_step(self, batch, batch_idx):
-        print("ts enter")
         
         if self.hparams.SAT == "vanila":
             return self.sat_vanila_training_step(batch, self.hparams.epsilon)
