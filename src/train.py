@@ -26,6 +26,7 @@ hparams = {
     # "scheduler" : "Cosine Delayed",
     "scheduler" : "Cosine Warm-up",
     "gaussian_loss" : 0,
+    "deformable" : False,
 }
 
 hparams = Namespace(**hparams)
